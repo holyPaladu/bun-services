@@ -3,9 +3,12 @@
   "version": "1.0.50",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build src/index.ts --compile --minify --outfile build/auth-service"
   },
   "dependencies": {
+    "@elysia/openapi": "^1.4.16",
+    "@sinclair/typebox": "^0.34.52",
     "elysia": "latest"
   },
   "devDependencies": {
