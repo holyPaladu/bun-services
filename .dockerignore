@@ -1,0 +1,13 @@
+.git
+.gitignore
+.agents
+.codex
+node_modules
+build
+dist
+coverage
+.env
+.env.*
+migrations
+README.md
+*.log

@@ -1,0 +1,52 @@
+name: "back"
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  migrate:
+    image: migrate/migrate:v4.19.1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations:ro
+    command: ["-path", "/migrations", "-database", "${DATABASE_URL:?Set DATABASE_URL in .env}", "up"]
+    restart: "no"
+
+  api:
+    image: auth-service:local
+    build: .
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:?Set PORT in .env}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env}
+      DATABASE_MAX: ${DATABASE_MAX:-10}
+      DATABASE_IDLE_TIMEOUT: ${DATABASE_IDLE_TIMEOUT:-30}
+      DATABASE_CONNECT_TIMEOUT: ${DATABASE_CONNECT_TIMEOUT:-10}
+      DATABASE_MAX_LIFETIME: ${DATABASE_MAX_LIFETIME:-3600}
+      DATABASE_PREPARE: ${DATABASE_PREPARE:-true}
+    ports:
+      - "${PORT:?Set PORT in .env}:${PORT:?Set PORT in .env}"
+
+volumes:
+  postgres_data:
