@@ -2,17 +2,20 @@
   "name": "auth-service",
   "version": "1.0.50",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "bun test",
     "dev": "bun run --watch src/index.ts",
-    "build": "bun build src/index.ts --compile --minify --outfile build/auth-service"
+    "build": "bun build src/index.ts --compile --minify --outfile build/auth-service",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@elysia/openapi": "^1.4.16",
     "@sinclair/typebox": "^0.34.52",
-    "elysia": "latest"
+    "elysia": "latest",
+    "jose": "6.2.12"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "typescript": "7.0.2"
   },
   "module": "src/index.js"
 }

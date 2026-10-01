@@ -9,18 +9,23 @@ export const createAccountRepository = (
   sql: DatabaseClient,
 ): AccountRepository => {
   return {
+    async findById(id) {
+      const [row] = await sql<AccountRow[]>`SELECT * FROM accounts WHERE id = ${id} LIMIT 1`
+      return row ? AccountMapper.toDomain(row) : null
+    },
+
     async findByEmail(email) {
       const [row] = await sql<AccountRow[]>`
         SELECT
           id,
           email,
           password_hash,
-      status,
-      created_at,
-      updated_at,
-      deleted_at
-      FROM accounts
-      WHERE email = ${email}
+          status,
+          created_at,
+          updated_at,
+          deleted_at
+        FROM accounts
+        WHERE lower(email) = lower(${email})
         LIMIT 1
       `
       return row ? AccountMapper.toDomain(row) : null

@@ -1,3 +1,4 @@
+import { loadJwtConfig, type JwtConfig } from './jwt.config'
 import { t, type Static } from 'elysia'
 import { Value } from '@sinclair/typebox/value'
 
@@ -41,7 +42,7 @@ const envSchema = t.Object({
 })
 
 type EnvSource = Readonly<Record<string, string | undefined>>
-export type Env = Static<typeof envSchema>
+export type Env = Static<typeof envSchema> & { jwt: JwtConfig }
 
 const optionalEnv = (
   value: string | undefined
@@ -50,23 +51,21 @@ const optionalEnv = (
   return trimmed ?? undefined
 }
 
-export const loadEnv = (source: EnvSource = Bun.env): Env =>
-  Value.Parse(envSchema, {
-    port: optionalEnv(source.PORT),
-    database: {
-      url: optionalEnv(source.DATABASE_URL),
-      max: optionalEnv(source.DATABASE_MAX),
-      idleTimeout: optionalEnv(
-        source.DATABASE_IDLE_TIMEOUT
-      ),
-      connectionTimeout: optionalEnv(
-        source.DATABASE_CONNECT_TIMEOUT
-      ),
-      maxLifetime: optionalEnv(
-        source.DATABASE_MAX_LIFETIME
-      ),
-      prepare: optionalEnv(
-        source.DATABASE_PREPARE
-      )
-    }
-  })
+export const loadEnv = (source: EnvSource = Bun.env): Env => {
+  try {
+    const config = Value.Parse(envSchema, {
+      port: optionalEnv(source.PORT),
+      database: {
+        url: optionalEnv(source.DATABASE_URL),
+        max: optionalEnv(source.DATABASE_MAX),
+        idleTimeout: optionalEnv(source.DATABASE_IDLE_TIMEOUT),
+        connectionTimeout: optionalEnv(source.DATABASE_CONNECT_TIMEOUT),
+        maxLifetime: optionalEnv(source.DATABASE_MAX_LIFETIME),
+        prepare: optionalEnv(source.DATABASE_PREPARE),
+      },
+    })
+    return { ...config, jwt: loadJwtConfig(source) }
+  } catch {
+    throw new Error('Invalid application configuration')
+  }
+}
