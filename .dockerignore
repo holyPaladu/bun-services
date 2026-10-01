@@ -11,3 +11,8 @@ coverage
 migrations
 README.md
 *.log
+
+# Local signing material
+*.pem
+*.key
+secrets/
