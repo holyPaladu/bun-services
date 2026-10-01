@@ -5,7 +5,7 @@ import { registerGracefulShutdown } from '@/shared/lifecycle/graceful-shutdown'
 
 const env: Env = loadEnv()
 const database = await createDatabase({ ...env.database })
-const app = createApp({ client: database })
+const app = await createApp({ client: database, jwt: env.jwt })
 
 app.listen(env.port, ({ hostname, port }): void => {
   console.log(`Listening on ${hostname}:${port}`)
